@@ -1,17 +1,25 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Grid from "@mui/material/Grid";
 
-import axios from "../axios";
+import { fetchPosts, fetchTags } from "../redux/slices/posts";
 
 import { Post } from "../components/Post";
 import { TagsBlock } from "../components/TagsBlock";
 import { CommentsBlock } from "../components/CommentsBlock";
 
 export const Home = () => {
+  const dispatch = useDispatch();
+  const { posts, tags } = useSelector((state) => state.posts);
+
+  console.log(posts, tags);
+  const isPostsLoading = posts.status === "loading" ? true : false;
+  const isTagsLoading = tags.status === "loading" ? true : false;
   React.useEffect(() => {
-    axios.get("/posts");
+    dispatch(fetchPosts());
+    dispatch(fetchTags());
   }, []);
 
   return (
@@ -26,30 +34,26 @@ export const Home = () => {
       </Tabs>
       <Grid container spacing={4}>
         <Grid xs={8} item>
-          {[...Array(5)].map(() => (
-            <Post
-              id={1}
-              title="Roast the code #1 | Rock Paper Scissors"
-              imageUrl="https://res.cloudinary.com/practicaldev/image/fetch/s--UnAfrEG8--/c_imagga_scale,f_auto,fl_progressive,h_420,q_auto,w_1000/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/icohm5g0axh9wjmu4oc3.png"
-              user={{
-                avatarUrl:
-                  "https://res.cloudinary.com/practicaldev/image/fetch/s--uigxYVRB--/c_fill,f_auto,fl_progressive,h_50,q_auto,w_50/https://dev-to-uploads.s3.amazonaws.com/uploads/user/profile_image/187971/a5359a24-b652-46be-8898-2c5df32aa6e0.png",
-                fullName: "Keff",
-              }}
-              createdAt={"12 июня 2022 г."}
-              viewsCount={150}
-              commentsCount={3}
-              tags={["react", "fun", "typescript"]}
-              isLoading={true}
-              isEditable
-            />
-          ))}
+          {(isPostsLoading ? [...Array(5)] : posts.items).map((obj, index) =>
+            isPostsLoading ? (
+              <Post isLoading={true} />
+            ) : (
+              <Post
+                _id={obj._id}
+                title={obj.title}
+                imageUrl={obj.imageUrl}
+                user={obj.user}
+                createdAt={obj.createdAt}
+                viewsCount={obj.viewsCount}
+                commentsCount={3}
+                tags={tags.items}
+                isEditable
+              />
+            )
+          )}
         </Grid>
         <Grid xs={4} item>
-          <TagsBlock
-            items={["react", "typescript", "заметки"]}
-            isLoading={false}
-          />
+          <TagsBlock items={tags.items} isLoading={isTagsLoading} />
           <CommentsBlock
             items={[
               {
