@@ -13,8 +13,6 @@ import { CommentsBlock } from "../components/CommentsBlock";
 export const Home = () => {
   const dispatch = useDispatch();
   const { posts, tags } = useSelector((state) => state.posts);
-
-  console.log(posts, tags);
   const isPostsLoading = posts.status === "loading" ? true : false;
   const isTagsLoading = tags.status === "loading" ? true : false;
   React.useEffect(() => {
@@ -46,7 +44,7 @@ export const Home = () => {
                 createdAt={obj.createdAt}
                 viewsCount={obj.viewsCount}
                 commentsCount={3}
-                tags={tags.items}
+                tags={obj.tags}
                 isEditable
               />
             )
