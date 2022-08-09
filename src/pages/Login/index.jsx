@@ -7,11 +7,11 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./Login.module.scss";
 import { fetchAuth, selectIsAuth } from "../../redux/slices/auth";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
+  const navigate = useNavigate();
   const isAuth = useSelector(selectIsAuth);
-  console.log(isAuth);
   const dispatch = useDispatch();
   const {
     register,
@@ -26,11 +26,20 @@ export const Login = () => {
     mode: "onChange",
   });
 
-  const onSubmit = (values) => {
-    dispatch(fetchAuth(values));
+  const onSubmit = async (values) => {
+    const data = await dispatch(fetchAuth(values));
+    console.log(data);
+    if (!data.payload) {
+      return alert("Не удалось авторизоваться");
+    }
+    if ("token" in data.payload) {
+      window.localStorage.setItem("token", data.payload.token);
+    } else {
+      alert("Не удалось авторизоваться");
+    }
   };
   if (isAuth) {
-    return <Navigate to="/" />;
+    navigate("/");
   }
 
   return (
@@ -42,7 +51,7 @@ export const Login = () => {
         <TextField
           className={styles.field}
           label="E-Mail"
-          error={Boolean(errors.password?.message)}
+          error={Boolean(errors.email?.message)}
           helperText={errors.email?.message}
           {...register("email", { required: "Укажите почту" })}
           fullWidth
