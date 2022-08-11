@@ -5,12 +5,13 @@ import Button from "@mui/material/Button";
 import SimpleMDE from "react-simplemde-editor";
 import { useSelector } from "react-redux";
 import { selectIsAuth } from "../../redux/slices/auth";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "../../axios";
 import "easymde/dist/easymde.min.css";
 import styles from "./AddPost.module.scss";
 
 export const AddPost = () => {
+  const { id } = useParams();
   const isAuth = useSelector(selectIsAuth);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -19,6 +20,8 @@ export const AddPost = () => {
   const [tags, setTags] = React.useState("");
   const [imageUrl, setImageUrl] = React.useState("");
   const inputFileRef = React.useRef(null);
+
+  const isEditing = Boolean(id);
 
   const handleChangeFile = async (e) => {
     try {
@@ -44,7 +47,10 @@ export const AddPost = () => {
         tags,
         text,
       };
-      const { data } = await axios.post("/posts", fields);
+      const { data } = isEditing
+        ? await axios.patch("/posts", fields)
+        : await axios.post("/posts", fields);
+
       const id = data._id;
       navigate(`/posts/${id}`);
     } catch (e) {
@@ -54,6 +60,16 @@ export const AddPost = () => {
 
   const onChange = React.useCallback((value) => {
     setText(value);
+  }, []);
+  React.useEffect(() => {
+    if (id) {
+      axios.get(`/posts/${id}`).then(({ data }) => {
+        setTitle(data.title);
+        setText(data.text);
+        setImageUrl(data.imageUrl);
+        setTags(data.tags.join(","));
+      });
+    }
   }, []);
 
   const options = React.useMemo(
@@ -132,7 +148,7 @@ export const AddPost = () => {
       />
       <div className={styles.buttons}>
         <Button size="large" variant="contained" onClick={onSubmit}>
-          Опубликовать
+          {isEditing ? "Сохранить" : "Опубликовать"}
         </Button>
         <Link to="/">
           <Button size="large">Отмена</Button>

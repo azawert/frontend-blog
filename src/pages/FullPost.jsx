@@ -17,6 +17,7 @@ export const FullPost = () => {
       .then((res) => {
         setData(res.data);
         setIsLoading(false);
+        console.log(res.data);
       })
       .catch((err) => {
         console.warn(err);
@@ -32,7 +33,7 @@ export const FullPost = () => {
       <Post
         id={data._id}
         title={data.title}
-        imageUrl={`http://localhost:9999${data.imageUrl}`}
+        imageUrl={data.imageUrl ? `http://localhost:9999${data.imageUrl}` : ""}
         user={data.user}
         createdAt={data.createdAt}
         viewsCount={data.viewsCount}
